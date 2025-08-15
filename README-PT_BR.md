@@ -1,5 +1,5 @@
 Pequeno script em Python/FFmpeg para otimizar vídeos 4K para 1080p/720p usados pelo Plex no meu Pi4.
-# OptmizePlexVideos.py
+# OptimizePlexVideos.py
 
 Transcoder em lote com painel 3×5, logs e versões Plex (1080p/720p), com *fallback* e *cascade* 720p ← 1080p.
 
@@ -74,7 +74,7 @@ Saídas em:
 ## Opções
 
 ```
-py .\OptmizePlexVideos.py ROOT [OPÇÕES]
+py .\OptimizePlexVideos.py ROOT [OPÇÕES]
 ```
 
 - `--force`  
@@ -158,35 +158,35 @@ Contém:
 
 ### 1) 2×GPU, 10 threads de CPU para decode/scale dos jobs GPU, *cascade* ativo
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10
 ```
 
 ### 2) 1×GPU, 10 threads de CPU para decode/scale, *cascade* ativo
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 1 --cpu-workers 0 --cpu-budget-for-gpu 10
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 1 --cpu-workers 0 --cpu-budget-for-gpu 10
 ```
 
 ### 3) 2×GPU com tentativa de NVDEC + scale_cuda (se disponível)
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --gpu-decode
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --gpu-decode
 ```
 
 ### 4) 2×GPU, desativando o *cascade* (720p direto do original)
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --no-cascade-720
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --no-cascade-720
 ```
 
 ### 5) Recriar saídas existentes
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --force
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --force
 ```
 
 ### 6) Ajustar taxa de atualização do painel e pasta de logs
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --refresh 0.5 --log-dir "E:\logs-plex"
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --refresh 0.5 --log-dir "E:\logs-plex"
 ```
 
 ### 7) Somente CPU (diagnóstico)
 ```powershell
-py .\OptmizePlexVideos.py "E:\" --gpu-workers 0 --cpu-workers 1 --cpu-threads 6
+py .\OptimizePlexVideos.py "E:\" --gpu-workers 0 --cpu-workers 1 --cpu-threads 6
 ```
