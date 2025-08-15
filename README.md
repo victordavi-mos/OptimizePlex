@@ -1,4 +1,4 @@
-Little python/ffmpeg script to optmize 4k videos into 1080p/720p used by plex on my Pi4 
+Little python/ffmpeg script to optimize 4k videos into 1080p/720p used by plex on my Pi4 
 # OptimizePlexVideos.py
 
 Batch transcoder with a 3×5 dashboard, logs, and Plex-ready versions (1080p/720p), with automatic fallback and a 720p-from-1080p cascade.
