@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OptimizePlexVideos.py — Manual (estilo man)</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --fg: #e5e7eb;
+      --muted: #9ca3af;
+      --link: #93c5fd;
+      --code-bg: #111827;
+      --border: #374151;
+      --accent: #60a5fa;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 16px;
+    }
+    header h1 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    nav.toc {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      background: #0f1116;
+    }
+    nav.toc h2 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    nav.toc ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      columns: 2;
+      column-gap: 24px;
+    }
+    nav.toc li {
+      margin: 4px 0;
+    }
+    nav.toc a {
+      color: var(--link);
+      text-decoration: none;
+    }
+    section {
+      margin: 28px 0;
+      padding-top: 8px;
+    }
+    section h2 {
+      font-size: 16px;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 6px;
+      margin: 0 0 12px 0;
+      letter-spacing: 0.3px;
+    }
+    code, pre, kbd {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow: auto;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    dl {
+      margin: 0;
+    }
+    dt {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 600;
+      margin-top: 14px;
+      color: var(--accent);
+    }
+    dd {
+      margin: 6px 0 12px 0;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .kbd {
+      background: #111827;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    footer {
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media print {
+      body { background: #fff; color: #000; }
+      header, nav.toc { border-color: #ccc; }
+      pre { background: #f7f7f7; border-color: #ddd; }
+      code { background: #f0f0f0; border-color: #ddd; color: #000; }
+      a { color: #06c; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>OptimizePlexVideos.py — Manual (estilo man)</h1>
+    <p>Transcoder em lote com painel 3×5, logs e versões Plex (1080p/720p), com fallback e cascade 720p←1080p.</p>
+  </header>
+
+  <main>
+    <nav class="toc" aria-label="Sumário">
+      <h2>Sumário</h2>
+      <ul>
+        <li><a href="#name">NAME</a></li>
+        <li><a href="#synopsis">SYNOPSIS</a></li>
+        <li><a href="#description">DESCRIPTION</a></li>
+        <li><a href="#requirements">REQUIREMENTS</a></li>
+        <li><a href="#operation">OPERATION</a></li>
+        <li><a href="#options">OPTIONS</a></li>
+        <li><a href="#dashboard">DASHBOARD</a></li>
+        <li><a href="#logs">LOGS</a></li>
+        <li><a href="#exit-status">EXIT STATUS</a></li>
+        <li><a href="#files">FILES</a></li>
+        <li><a href="#notes">NOTES</a></li>
+        <li><a href="#examples">EXAMPLES</a></li>
+      </ul>
+    </nav>
+
+    <section id="name">
+      <h2>NAME</h2>
+      <p><strong>OptimizePlexVideos.py</strong> — transcoder em lote com painel “3×5”, logs e versões Plex (1080p/720p), com fallback e cascade 720p←1080p.</p>
+    </section>
+
+    <section id="synopsis">
+      <h2>SYNOPSIS</h2>
+      <pre><code>py .\OptimizePlexVideos.py ROOT [OPÇÕES]</code></pre>
+    </section>
+
+    <section id="description">
+      <h2>DESCRIPTION</h2>
+      <p>Varre <code>ROOT</code> recursivamente e processa apenas vídeos &gt;1080p (largura &gt;1920 ou altura &gt;1080), gerando até duas versões compatíveis com Plex, dentro de <code>Plex Versions/</code>:</p>
+      <ul>
+        <li><strong>Optimized-1080p</strong> (H.264 + AAC 2.0, MP4)</li>
+        <li><strong>Optimized-720p</strong> (H.264 + AAC 2.0, MP4)</li>
+      </ul>
+      <p>Recursos:</p>
+      <ul>
+        <li>1×GPU ou 2×GPU (NVENC) com orçamento de CPU reservado para <em>decode/scale</em> dos jobs GPU.</li>
+        <li><strong>Cascade 720p ← 1080p</strong>: quando habilitado (padrão), a 720p é gerada a partir da 1080p já otimizada.</li>
+        <li><strong>Fallback</strong> automático: falhando NVENC, recodifica no CPU (libx264).</li>
+        <li>Painel 3×5 linhas (um bloco por worker; máx. 2×GPU + 1×CPU).</li>
+        <li>Logs por conversão em <code>encode-logs/</code>.</li>
+      </ul>
+      <p>Mapeamentos:</p>
+      <ul>
+        <li>Áudio: 1ª trilha → <strong>AAC estéreo 192 kbps</strong>.</li>
+        <li>Legendas texto: convertidas para <strong>mov_text</strong> (SRT/ASS/SSA/WebVTT). Legendas imagem (PGS/DVB) não são incluídas.</li>
+      </ul>
+      <p>Política de sobrescrita: saídas existentes são <strong>puladas</strong>. Use <code>--force</code> para recriar.</p>
+    </section>
+
+    <section id="requirements">
+      <h2>REQUIREMENTS</h2>
+      <ul>
+        <li>Windows com PowerShell.</li>
+        <li><code>ffmpeg</code> e <code>ffprobe</code> no <code>PATH</code>.</li>
+        <li>NVENC disponível (para workers GPU).</li>
+        <li>Opcional: filtro <code>scale_cuda</code> no FFmpeg para <code>--gpu-decode</code>.</li>
+      </ul>
+    </section>
+
+    <section id="operation">
+      <h2>OPERATION</h2>
+      <ol>
+        <li>Localiza vídeos suportados (ex.: <code>.mkv</code>, <code>.mp4</code>, …), exclui <code>Plex Versions/</code> e arquivos já “(Optimized-…)”.</li>
+        <li>Filtra &gt;1080p.</li>
+        <li>Para cada título:
+          <ul>
+            <li>Gera 1080p; depois 720p.</li>
+            <li>Se cascade ativo e a 1080p existir/concluir, a 720p usa a 1080p como fonte.</li>
+            <li>Tenta NVENC; se falhar/gerar 0 B, faz fallback CPU.</li>
+          </ul>
+        </li>
+        <li>Exibe progresso por worker (5 linhas) e grava log.</li>
+      </ol>
+      <p>Saída: <code>Pasta do filme\Plex Versions\Nome (Optimized-1080p).mp4</code> e <code>…(Optimized-720p).mp4</code>.</p>
+    </section>
+
+    <section id="options">
+      <h2>OPTIONS</h2>
+      <dl>
+        <dt>--force</dt>
+        <dd>Recria as saídas mesmo que existam.</dd>
+
+        <dt>--gpu-workers <span class="kbd">N</span></dt>
+        <dd>Número de workers GPU (1 ou 2). Padrão: 2.</dd>
+
+        <dt>--cpu-workers <span class="kbd">N</span></dt>
+        <dd>Worker CPU (0 ou 1). Padrão: 0.</dd>
+
+        <dt>--cpu-threads <span class="kbd">N</span></dt>
+        <dd>Apenas para o worker CPU (quando <code>--cpu-workers 1</code>). Fallback CPU interno usa 5.</dd>
+
+        <dt>--cpu-budget-for-gpu <span class="kbd">N</span></dt>
+        <dd>Orçamento total de threads de CPU para decode/scale dos jobs GPU quando o scale roda no CPU (sem <code>scale_cuda</code>). O valor é dividido por worker (ex.: N=10, <code>--gpu-workers 2</code> ⇒ 5 por job). Padrão: 10.</dd>
+
+        <dt>--gpu-filter-threads <span class="kbd">N</span></dt>
+        <dd>Threads de filtros nos jobs GPU quando o scale roda no CPU (sem <code>scale_cuda</code>). Usado como mínimo quando não houver orçamento calculado.</dd>
+
+        <dt>--gpu-decode</dt>
+        <dd>Tenta NVDEC + <code>scale_cuda</code> (se disponível). Sem <code>scale_cuda</code>, a cadeia fica no CPU.</dd>
+
+        <dt>--refresh <span class="kbd">SECS</span></dt>
+        <dd>Intervalo de atualização do painel (0.2–2.0). Padrão: 1.0.</dd>
+
+        <dt>--log-dir <span class="kbd">PATH</span></dt>
+        <dd>Diretório de logs. Padrão: <code>encode-logs</code>.</dd>
+
+        <dt>--no-cascade-720</dt>
+        <dd>Desativa o cascade; 720p sempre parte do arquivo original.</dd>
+      </dl>
+    </section>
+
+    <section id="dashboard">
+      <h2>DASHBOARD</h2>
+      <p>Três blocos (máx.): <code>GPU#1</code>, <code>GPU#2</code>, <code>CPU#1</code>. Cada bloco mostra 5 linhas:</p>
+      <ol>
+        <li>Worker e label do alvo (ex.: <code>Optimized-1080p</code> / <code>Optimized-720p [src=1080p]</code>)</li>
+        <li>Nome do arquivo de entrada</li>
+        <li><code>t=… fps=… speed=… size=…</code></li>
+        <li>Nome do arquivo de saída</li>
+        <li>Último erro do <code>stderr</code> (se houver) ou “(nenhum)”</li>
+      </ol>
+    </section>
+
+    <section id="logs">
+      <h2>LOGS</h2>
+      <p>Para cada saída gerada: <code>encode-logs/&lt;TÍTULO&gt;__&lt;ALVO&gt;.log</code></p>
+      <p>Contém:</p>
+      <ul>
+        <li>Linha de comando do FFmpeg usada</li>
+        <li>Progresso (<code>-progress</code>)</li>
+        <li><code>stderr</code> do FFmpeg</li>
+        <li><code>STATUS: SUCCESS/FAILED</code></li>
+      </ul>
+    </section>
+
+    <section id="exit-status">
+      <h2>EXIT STATUS</h2>
+      <ul>
+        <li><strong>0</strong>: execução concluída (pode haver arquivos falhados; ver logs).</li>
+        <li><strong>2</strong>: erro de uso/ambiente (FFmpeg ausente, diretório inválido, etc.).</li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2>FILES</h2>
+      <ul>
+        <li><code>Plex Versions/</code> — diretório das versões otimizadas por título.</li>
+        <li><code>encode-logs/</code> — diretório de logs por conversão.</li>
+      </ul>
+    </section>
+
+    <section id="notes">
+      <h2>NOTES</h2>
+      <ul>
+        <li>Apenas &gt;1080p são processados.</li>
+        <li>Saídas 0 B são removidas e reprocessadas via fallback CPU.</li>
+        <li>Em pipeline GPU completo (<code>--gpu-decode</code> com <code>scale_cuda</code>), o orçamento de CPU tem pouco efeito.</li>
+        <li>Desempenho depende de I/O do disco e do preset NVENC (<code>p5</code> no script).</li>
+      </ul>
+    </section>
+
+    <section id="examples">
+      <h2>EXAMPLES</h2>
+
+      <h3>1) 2×GPU, 10 threads de CPU para decode/scale dos jobs GPU, cascade ativo</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10</code></pre>
+
+      <h3>2) 1×GPU, 10 threads de CPU para decode/scale, cascade ativo</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 1 --cpu-workers 0 --cpu-budget-for-gpu 10</code></pre>
+
+      <h3>3) 2×GPU com tentativa de NVDEC + scale_cuda (se disponível)</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --gpu-decode</code></pre>
+
+      <h3>4) 2×GPU, desativando o cascade (720p direto do original)</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --no-cascade-720</code></pre>
+
+      <h3>5) Forçar recriação das saídas existentes</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --force</code></pre>
+
+      <h3>6) Ajustar taxa de atualização do painel e pasta de logs</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --refresh 0.5 --log-dir "E:\logs-plex"</code></pre>
+
+      <h3>7) Somente CPU (diagnóstico)</h3>
+      <pre><code>py .\OptimizePlexVideos.py "E:\" --gpu-workers 0 --cpu-workers 1 --cpu-threads 6</code></pre>
+    </section>
+
+    <footer>
+      <p>Manual gerado para uso local. Ajuste conforme necessário.</p>
+    </footer>
+  </main>
+</body>
+</html>
