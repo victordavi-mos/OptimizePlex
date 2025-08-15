@@ -1,137 +1,194 @@
-# OptmizePlex
-Little python/ffmpeg script to optmize 4k videos into 1080p/720p used by plex on my Pi4
-otimizaplex_dashboard_hybrid.py — transcoder em lote com painel “3×5”, logs e versões Plex (1080p/720p), com fallback e cascade 720p←1080p.
-SYNOPSIS
-
-py .\otimizaplex_dashboard_hybrid.py ROOT [OPÇÕES]
-
-DESCRIPTION
-
-Varre ROOT recursivamente e processa apenas vídeos >1080p (largura >1920 ou altura >1080), gerando até duas versões compatíveis com Plex, dentro de Plex Versions/:
-
-    Optimized-1080p (H.264 + AAC 2.0, MP4)
-    Optimized-720p (H.264 + AAC 2.0, MP4)
-
-Recursos:
-
-    1×GPU ou 2×GPU (NVENC) com orçamento de CPU reservado para decode/scale dos jobs GPU.
-    Cascade 720p ← 1080p: quando habilitado (padrão), a 720p é gerada a partir da 1080p já otimizada.
-    Fallback automático: falhando NVENC, recodifica no CPU (libx264).
-    Painel 3×5 linhas (um bloco por worker; máx. 2×GPU + 1×CPU).
-    Logs por conversão em encode-logs/.
-
-Mapeamentos:
-
-    Áudio: 1ª trilha → AAC estéreo 192 kbps.
-    Legendas texto: convertidas para mov_text (SRT/ASS/SSA/WebVTT). Legendas imagem (PGS/DVB) não são incluídas.
-
-Política de sobrescrita: saídas existentes são puladas. Use --force para recriar.
-REQUIREMENTS
-
-    Windows com PowerShell.
-    ffmpeg e ffprobe no PATH.
-    NVENC disponível (para workers GPU).
-    Opcional: filtro scale_cuda no FFmpeg para --gpu-decode.
-
-OPERATION
-
-    Localiza vídeos suportados (ex.: .mkv, .mp4, …), exclui Plex Versions/ e arquivos já “(Optimized-…)”.
-    Filtra >1080p.
-    Para cada título:
-        Gera 1080p; depois 720p.
-        Se cascade ativo e a 1080p existir/concluir, a 720p usa a 1080p como fonte.
-        Tenta NVENC; se falhar/gerar 0 B, faz fallback CPU.
-    Exibe progresso por worker (5 linhas) e grava log.
-
-Saída: Pasta do filme\Plex Versions\Nome (Optimized-1080p).mp4 e …(Optimized-720p).mp4.
-OPTIONS
-
---force
-    Recria as saídas mesmo que existam.
---gpu-workers N
-    Número de workers GPU (1 ou 2). Padrão: 2.
---cpu-workers N
-    Worker CPU (0 ou 1). Padrão: 0.
---cpu-threads N
-    Apenas para o worker CPU (quando --cpu-workers 1). Fallback CPU interno usa 5.
---cpu-budget-for-gpu N
-    Orçamento total de threads de CPU para decode/scale dos jobs GPU quando o scale roda no CPU (sem scale_cuda). O valor é dividido por worker (ex.: N=10, --gpu-workers 2 ⇒ 5 por job). Padrão: 10.
---gpu-filter-threads N
-    Threads de filtros nos jobs GPU quando o scale roda no CPU (sem scale_cuda). Usado como mínimo quando não houver orçamento calculado.
---gpu-decode
-    Tenta NVDEC + scale_cuda (se disponível). Sem scale_cuda, a cadeia fica no CPU.
---refresh SECS
-    Intervalo de atualização do painel (0.2–2.0). Padrão: 1.0.
---log-dir PATH
-    Diretório de logs. Padrão: encode-logs.
---no-cascade-720
-    Desativa o cascade; 720p sempre parte do arquivo original.
-
-DASHBOARD
-
-Três blocos (máx.): GPU#1, GPU#2, CPU#1. Cada bloco mostra 5 linhas:
-
-    Worker e label do alvo (ex.: Optimized-1080p / Optimized-720p [src=1080p])
-    Nome do arquivo de entrada
-    t=… fps=… speed=… size=…
-    Nome do arquivo de saída
-    Último erro do stderr (se houver) ou “(nenhum)”
-
-LOGS
-
-Para cada saída gerada: encode-logs/<TÍTULO>__<ALVO>.log
-
-Contém:
-
-    Linha de comando do FFmpeg usada
-    Progresso (-progress)
-    stderr do FFmpeg
-    STATUS: SUCCESS/FAILED
-
-EXIT STATUS
-
-    0: execução concluída (pode haver arquivos falhados; ver logs).
-    2: erro de uso/ambiente (FFmpeg ausente, diretório inválido, etc.).
-
-FILES
-
-    Plex Versions/ — diretório das versões otimizadas por título.
-    encode-logs/ — diretório de logs por conversão.
-
-NOTES
-
-    Apenas >1080p são processados.
-    Saídas 0 B são removidas e reprocessadas via fallback CPU.
-    Em pipeline GPU completo (--gpu-decode com scale_cuda), o orçamento de CPU tem pouco efeito.
-    Desempenho depende de I/O do disco e do preset NVENC (p5 no script).
-
-EXAMPLES
-1) 2×GPU, 10 threads de CPU para decode/scale dos jobs GPU, cascade ativo
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10
-
-2) 1×GPU, 10 threads de CPU para decode/scale, cascade ativo
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 1 --cpu-workers 0 --cpu-budget-for-gpu 10
-
-3) 2×GPU com tentativa de NVDEC + scale_cuda (se disponível)
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --gpu-decode
-
-4) 2×GPU, desativando o cascade (720p direto do original)
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --no-cascade-720
-
-5) Forçar recriação das saídas existentes
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --force
-
-6) Ajustar taxa de atualização do painel e pasta de logs
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --refresh 0.5 --log-dir "E:\logs-plex"
-
-7) Somente CPU (diagnóstico)
-
-py .\otimizaplex_dashboard_hybrid.py "E:\" --gpu-workers 0 --cpu-workers 1 --cpu-threads 6
+Little python/ffmpeg script to optmize 4k videos into 1080p/720p used by plex on my Pi4 
 
 
+# OptmizePlexVideos.py
+
+Batch transcoder with a 3×5 dashboard, logs, and Plex-ready versions (1080p/720p), with automatic fallback and a 720p-from-1080p cascade.
+
+---
+
+## Table of Contents
+
+- [Description](#description)
+- [Requirements](#requirements)
+- [Operation](#operation)
+- [Options](#options)
+- [Dashboard](#dashboard)
+- [Logs](#logs)
+- [Exit Codes](#exit-codes)
+- [Notes](#notes)
+- [Examples](#examples)
+
+---
+
+## Description
+
+Recursively scans the root directory and processes **only videos >1080p** (width >1920 **or** height >1080), generating Plex-compatible versions in `Plex Versions/`:
+
+- **Optimized-1080p** — H.264 + AAC 2.0 (MP4)  
+- **Optimized-720p** — H.264 + AAC 2.0 (MP4)
+
+Features:
+
+- **1× or 2× GPU (NVENC)** with a **CPU budget** reserved for **decode/scale** of GPU jobs.
+- **Cascade 720p ← 1080p**: 720p is generated from the already optimized 1080p (default).
+- **Automatic fallback**: if NVENC fails or produces a 0‑byte file, it recodes on **CPU** (libx264).
+- **3×5-line dashboard** (up to 2×GPU + 1×CPU).
+- **Per-conversion logs** in `encode-logs/`.
+
+Track handling:
+
+- **Audio**: first audio track → AAC stereo 192 kbps.
+- **Text subtitles**: converted to `mov_text` (SRT/ASS/SSA/WebVTT).  
+  Image subtitles (PGS/DVB) are **not** included.
+
+Overwrite policy: existing outputs are **skipped**. Use `--force` to recreate.
+
+---
+
+## Requirements
+
+- Windows with PowerShell.  
+- `ffmpeg` and `ffprobe` in `PATH`.  
+- NVENC available (for GPU workers).  
+- Optional: `scale_cuda` filter in FFmpeg for `--gpu-decode`.
+
+---
+
+## Operation
+
+1. Locates supported videos (e.g., `.mkv`, `.mp4`), ignores `Plex Versions/` and files already marked “(Optimized-…)”.  
+2. Filters **>1080p** only.  
+3. For each title:  
+   - Produces **1080p**, then **720p**.  
+   - If **cascade** is enabled and 1080p exists/completes, **720p uses the 1080p file as source**.  
+   - Tries **NVENC**; if it fails/produces 0 B, uses **CPU fallback**.  
+4. Shows per-worker progress (5 lines) and writes a log.
+
+Outputs are saved to:
+```
+<Movie>\Plex Versions\<Name> (Optimized-1080p).mp4
+<Movie>\Plex Versions\<Name> (Optimized-720p).mp4
+```
+
+---
+
+## Options
+
+```
+py .\OptmizePlexVideos.py ROOT [OPTIONS]
+```
+
+- `--force`  
+  Recreate outputs even if they already exist.
+
+- `--gpu-workers N`  
+  Number of GPU workers (1 or 2). Default: 2.
+
+- `--cpu-workers N`  
+  CPU worker (0 or 1). Default: 0.
+
+- `--cpu-threads N`  
+  Threads per **CPU worker** (only if `--cpu-workers 1`). Internal CPU fallback uses 5.
+
+- `--cpu-budget-for-gpu N`  
+  **Total** CPU threads reserved for **decode/scale** of GPU jobs when scaling runs on the **CPU** (no `scale_cuda`).  
+  Split **per worker** (e.g., 10 with `--gpu-workers 2` ⇒ 5 per job). Default: 10.
+
+- `--gpu-filter-threads N`  
+  Filter threads on GPU jobs when scaling runs on the **CPU** (no `scale_cuda`). Used as a minimum when no per‑worker budget applies.
+
+- `--gpu-decode`  
+  Attempt **NVDEC + `scale_cuda`** (if available). Without `scale_cuda`, decode/scale remains on **CPU**.
+
+- `--refresh SECS`  
+  Dashboard refresh interval (0.2–2.0). Default: 1.0.
+
+- `--log-dir PATH`  
+  Logs directory. Default: `encode-logs`.
+
+- `--no-cascade-720`  
+  Disable cascade; 720p always uses the **original** file.
+
+---
+
+## Dashboard
+
+Three blocks (max.): `GPU#1`, `GPU#2`, `CPU#1`. Each block shows 5 lines:
+
+1) Worker and target (e.g., `Optimized-1080p` / `Optimized-720p [src=1080p]`)  
+2) Input file  
+3) `t=…  fps=…  speed=…  size=…`  
+4) Output file  
+5) Last `stderr` line or “(none)”
+
+---
+
+## Logs
+
+For each produced output:  
+`encode-logs/<TITLE>__<TARGET>.log`
+
+Contains:
+
+- FFmpeg command line used  
+- Progress (`-progress`)  
+- FFmpeg `stderr`  
+- `STATUS: SUCCESS/FAILED`
+
+---
+
+## Exit Codes
+
+- **0** — finished (some files may have failed; check logs).  
+- **2** — usage/environment error (FFmpeg missing, invalid directory, etc.).
+
+---
+
+## Notes
+
+- Only **>1080p** videos are processed.  
+- **0‑byte** outputs are removed and reprocessed via CPU fallback.  
+- With `--gpu-decode` **and** `scale_cuda`, the CPU budget has little effect.  
+- Throughput depends on disk I/O and NVENC preset (default `p5` in the script).
+
+---
+
+## Examples
+
+> In the examples below, the root directory is `E:\`.
+
+### 1) 2×GPU, 10 CPU threads reserved for GPU jobs’ decode/scale, cascade enabled
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10
+```
+
+### 2) 1×GPU, 10 CPU threads for decode/scale, cascade enabled
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 1 --cpu-workers 0 --cpu-budget-for-gpu 10
+```
+
+### 3) 2×GPU with NVDEC + scale_cuda attempt (if available)
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --gpu-decode
+```
+
+### 4) 2×GPU, cascade disabled (720p from original)
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --no-cascade-720
+```
+
+### 5) Force recreation of existing outputs
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --force
+```
+
+### 6) Adjust dashboard refresh rate and logs folder
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 2 --cpu-workers 0 --cpu-budget-for-gpu 10 --refresh 0.5 --log-dir "E:\logs-plex"
+```
+
+### 7) CPU-only (diagnostics)
+```powershell
+py .\OptmizePlexVideos.py "E:\" --gpu-workers 0 --cpu-workers 1 --cpu-threads 6
+```
